@@ -194,9 +194,9 @@ class Channel(object):
         Parameters
         ----------
         channel_json : dict
-            The parsed JSON reponse from the Replicated API.
+            The parsed JSON response from the Replicated API.
         app : App
-            The app that owns this :class:`~Channel`.
+            The :class:`~App` that owns this :class:`~Channel`.
         session : requests.Session
             The requests Session this :class:`~Channel` will use when
             making requests.
