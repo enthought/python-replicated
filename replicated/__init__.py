@@ -37,6 +37,10 @@ class App(object):
         instance._session = session
         return instance
 
+    @property
+    def releases(self):
+        return ReleasesSlice(self, self._session)
+
 
 @attributes
 class Channel(object):
@@ -72,6 +76,74 @@ class Channel(object):
     @property
     def url(self):
         return self.app.url + '/channel/{0}'.format(id)
+
+
+@attributes
+class Release(object):
+    app = attr(repr=False)
+    sequence = attr()
+    version = attr()
+    editable = attr(repr=False)
+    created_at = attr(repr=False)
+    edited_at = attr(repr=False)
+    active_channels = attr(repr=False)
+    _session = attr(cmp=False, repr=False, hash=False, init=False)
+
+    @classmethod
+    def from_json(cls, release_json, app, session=None):
+        app_id = release_json['AppId']
+        assert app_id == app.id
+        active_channel_ids = set(
+            c['Id'] for c in release_json['ActiveChannels'])
+        active_channels = [
+            c for c in app.channels if c.id in active_channel_ids
+        ]
+        instance = cls(
+            app=app,
+            sequence=release_json['Sequence'],
+            version=release_json['Version'],
+            editable=release_json['Editable'],
+            created_at=release_json['CreatedAt'],
+            edited_at=release_json['EditedAt'],
+            active_channels=active_channels,
+        )
+        instance._session = session
+        return instance
+
+
+class ReleasesSlice(object):
+
+    def __init__(self, app, session):
+        self.app = app
+        self._session = session
+
+    def __getitem__(self, key):
+        if not isinstance(key, slice):
+            raise TypeError('Expected a slice')
+
+        if key.step not in (None, 1):
+            raise ValueError('Step size is not supported')
+        if key.stop is None:
+            suffix = '/releases'
+        else:
+            suffix = '/releases/paged?start={start}&count={stop}'.format(
+                start=key.start or 0, stop=key.stop)
+
+        url = self.app.url + suffix
+        response = self._session.get(url)
+        response.raise_for_status()
+        releases_json = response.json()
+
+        if key.stop is not None:
+            releases_json = releases_json['releases']
+
+        return [
+            Release.from_json(item, self.app, self._session)
+            for item in releases_json
+        ]
+
+    def __iter__(self):
+        return iter(self[:])
 
 
 class ReplicatedAPI(object):
