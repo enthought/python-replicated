@@ -39,9 +39,6 @@ class NewReleaseSource(enum.Enum):
     #: Create a new release as a copy of the latest release.
     latest = 'latest'
 
-    #: Create a new release as a copy of the specified release.
-    copy = 'copy'
-
 
 @attributes
 class App(object):
@@ -109,27 +106,32 @@ class App(object):
         """
         return ReleasesSlice(self, self._session)
 
-    def create_release(self, source=NewReleaseSource.none, copy=None):
+    def create_release(self, source=NewReleaseSource.none):
         """Create a new release.
+
+        By default this will create a new release with no
+        configuration.
+
+        If ``source`` is :attribute:`~NewReleaseSource.latest`, then
+        the latest :class:`~Release` will be used as the source
+        configuration.
+
+        If ``source`` is an instance of :class:`~Release`, then that
+        release will be used as the source of the configuration.
 
         Parameters
         ----------
-        source : NewReleaseSource
+        source : NewReleaseSource or Release
             The source of configuration for the new release.
-        copy : Release
-            The release to copy configuration from when source is
-            ``NewReleaseSource.copy``.
 
         """
         url = self.url + '/release'
         data = {}
-        if source != NewReleaseSource.none:
+        if source == NewReleaseSource.latest:
             data['source'] = source.value
-            if source == NewReleaseSource.copy:
-                if copy is None:
-                    raise ValueError(
-                        'Copy specified but no source release provided')
-                data['sourcedata'] = copy.sequence
+        elif isinstance(source, Release):
+            data['source'] = 'copy'
+            data['sourcedata'] = source.sequence
         response = self._session.post(
             url,
             data=json.dumps(data),
