@@ -180,6 +180,32 @@ class Release(object):
         self.created_at = response_json['CreatedAt']
         self.edited_at = response_json['EditedAt']
 
+    def archive(self):
+        url = self.url + '/archive'
+        response = self._session.post(url)
+        response.raise_for_status()
+
+    def promote(self, channels, required=True, release_notes=None, label=None):
+        url = self.url + '/promote'
+        if len(channels) == 0:
+            raise ValueError('Expected at least one channel')
+        data = {
+            'channels': [channel.id for channel in channels],
+            'required': required,
+        }
+        if release_notes is not None:
+            data['release_notes'] = release_notes
+        if label is not None:
+            data['label'] = label
+
+        response = self._session.post(
+            url,
+            data=json.dumps(data),
+            headers={'Content-Type': 'application/json'},
+        )
+        response.raise_for_status()
+
+
 class ReleasesSlice(object):
 
     def __init__(self, app, session):
