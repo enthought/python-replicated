@@ -73,7 +73,8 @@ class App(object):
         ----------
         app_channels_json : dict
             The parsed JSON response of the Replicated API.  This mus
-            contain an ``App`` element and a ``Channels`` element.
+            contain an :class:`~App` element and a :class:`~Channels`
+            element.
         session : requests.Session
             The requests Session this App will use when making requests.
 
@@ -113,8 +114,8 @@ class App(object):
         based on the latest release. This is the same behaviour as the
         Replicated Vendor web interface..
 
-        If ``source`` is :attribute:`~NewReleaseSource.none`, then
-        the new release will have an empty configuration..
+        If ``source`` is :attr:`~NewReleaseSource.none`, then the new
+        release will have an empty configuration..
 
         If ``source`` is an instance of :class:`~Release`, then that
         release will be used as the source of the configuration.
