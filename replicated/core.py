@@ -84,7 +84,7 @@ class App(object):
         id = app_json['Id']
         name = app_json['Name']
         slug = app_json['Slug']
-        url = ReplicatedAPI.base_url + '/app/{0}'.format(id)
+        url = ReplicatedVendorAPI.base_url + '/app/{0}'.format(id)
         instance = cls(
             id=id,
             name=name,
@@ -451,16 +451,31 @@ class ReleasesSlice(object):
         return iter(self[:])
 
 
-class ReplicatedAPI(object):
+class ReplicatedVendorAPI(object):
+    """The entry-point into the Replicated Vendor API.
 
+    """
+
+    #: The base URL of all Vendor API calls.
     base_url = 'https://api.replicated.com/vendor/v1'
 
     def __init__(self, token):
+        """Create a :class:`~ReplicatedVendorAPI` instance.
+
+        Parameters
+        ----------
+        token : str
+            The Replicated API token used for authentication.
+
+        """
         self.session = requests.Session()
         self.session.headers['User-Agent'] = default_user_agent()
         self.session.headers['Authorization'] = token
 
     def get_apps(self):
+        """Get a list of all applications.
+
+        """
         url = self.base_url + '/apps'
         response = self.session.get(url)
         response.raise_for_status()
