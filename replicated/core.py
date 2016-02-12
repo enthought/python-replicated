@@ -106,15 +106,15 @@ class App(object):
         """
         return ReleasesSlice(self, self._session)
 
-    def create_release(self, source=NewReleaseSource.none):
+    def create_release(self, source=NewReleaseSource.latest):
         """Create a new release.
 
-        By default this will create a new release with no
-        configuration.
+        By default this will create a new release with configuration
+        based on the latest release. This is the same behaviour as the
+        Replicated Vendor web interface..
 
-        If ``source`` is :attribute:`~NewReleaseSource.latest`, then
-        the latest :class:`~Release` will be used as the source
-        configuration.
+        If ``source`` is :attribute:`~NewReleaseSource.none`, then
+        the new release will have an empty configuration..
 
         If ``source`` is an instance of :class:`~Release`, then that
         release will be used as the source of the configuration.
@@ -125,6 +125,11 @@ class App(object):
             The source of configuration for the new release.
 
         """
+        if not isinstance(source, (NewReleaseSource, Release)):
+            raise ValueError(
+                'Expected a NewReleaseSource or Release, '
+                'got {0}: {1!r}'.format(
+                    type(source), source))
         url = self.url + '/release'
         data = {}
         if source == NewReleaseSource.latest:
