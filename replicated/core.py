@@ -67,16 +67,17 @@ class App(object):
 
     @classmethod
     def from_json(cls, app_channels_json, session=None):
-        """Create a new App instance from JSON returned by the Replicated API.
+        """Create a new :class:`~App` instance from JSON returned by the
+        Replicated API.
 
         Parameters
         ----------
         app_channels_json : dict
-            The parsed JSON response of the Replicated API.  This mus
-            contain an :class:`~App` element and a :class:`~Channels`
-            element.
+            The parsed JSON response of the Replicated API.  This must
+            contain an ``App`` element and a ``Channels`` element.
         session : requests.Session
-            The requests Session this App will use when making requests.
+            The requests Session this :class:`~App` will use when
+            making requests.
 
         """
         app_json = app_channels_json['App']
