@@ -7,8 +7,7 @@ from requests.utils import default_user_agent as requests_user_agent
 import requests
 import six
 
-
-__version__ = '0.0.1'
+from ._version import version as __version__
 
 
 def default_user_agent(base=None):
