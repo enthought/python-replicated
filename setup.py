@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 
 from setuptools import setup, find_packages
 
@@ -94,7 +95,18 @@ if not is_released:
 
 
 if __name__ == "__main__":
+    install_requires = [
+        'six',
+        'attrs >= 15.0.0',
+        'requests >= 2.3.0',
+        'pyyaml >= 3.0',
+    ]
+    py2_requires = install_requires + [
+        'enum34 >= 1.1.0',
+    ]
     __version__ = write_version_py()
+    if sys.version_info < (3, 0):
+        install_requires += py2_requires
 
     setup(
         name="python-replicated",
@@ -102,4 +114,9 @@ if __name__ == "__main__":
         packages=list(find_packages()),
         author="Enthought Ltd",
         author_email="info@enthought.com",
+        extras_require={
+            ':python_version=="2.7"': py2_requires,
+            ':python_version=="3.2"': install_requires,
+            ':python_version=="3.3"': install_requires,
+        },
     )
