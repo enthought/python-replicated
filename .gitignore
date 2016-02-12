@@ -2,3 +2,4 @@
 *.pyc
 /replicated/_version.py
 /python_replicated.egg-info/
+/.tox
