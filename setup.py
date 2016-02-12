@@ -114,6 +114,7 @@ if __name__ == "__main__":
         packages=list(find_packages()),
         author="Enthought Ltd",
         author_email="info@enthought.com",
+        install_requires=install_requires,
         extras_require={
             ':python_version=="2.7"': py2_requires,
             ':python_version=="3.2"': install_requires,
