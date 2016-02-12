@@ -105,15 +105,32 @@ class App(object):
     def releases(self):
         """Query the application releases.
 
+        This is an iterable that will retrieve the specified subset of
+        :class:`~Release` objects.
+
+        To retrieve the full list of releases, use the full-slice
+        notation::
+
+            >>> app.releases[:]
+
+        or::
+
+            >>> list(app.releases)
+
+        To retrieve a subset of releases, slice the iterable as usual::
+
+            >>> app.releases[2:4]
+
         """
         return ReleasesSlice(self, self._session)
 
     def create_release(self, source=NewReleaseSource.latest):
-        """Create a new release.
+        """Create a new :class:`~Release`.
 
-        By default this will create a new release with configuration
-        based on the latest release. This is the same behaviour as the
-        Replicated Vendor web interface..
+        By default (when ``source`` is
+        :class:`~NewReleaseSource.latest`) this will create a new
+        release with configuration based on the latest release. This
+        is the same behaviour as the Replicated Vendor web interface..
 
         If ``source`` is :attr:`~NewReleaseSource.none`, then the new
         release will have an empty configuration..
@@ -123,7 +140,7 @@ class App(object):
 
         Parameters
         ----------
-        source : NewReleaseSource or Release
+        source : NewReleaseSource : Release
             The source of configuration for the new release.
 
         """
@@ -392,6 +409,8 @@ class ReleasesSlice(object):
     """A helper object to query a sequence of releases from the Replicated
     API.
 
+    See :attr:`replicated.core.App.releases`
+
     """
 
     def __init__(self, app, session):
@@ -473,7 +492,7 @@ class ReplicatedVendorAPI(object):
         self.session.headers['Authorization'] = token
 
     def get_apps(self):
-        """Get a list of all applications.
+        """Get a list of all :class:`replicated.core.App` instances.
 
         """
         url = self.base_url + '/apps'
