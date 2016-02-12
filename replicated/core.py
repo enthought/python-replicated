@@ -154,30 +154,61 @@ class App(object):
 
 @attributes
 class Channel(object):
+    """A distribution channel for an :class:`~App`.
+
+    """
+
+    #: The channel ID.
     id = attr(repr=False)
+
+    #: The name of the channel
     name = attr()
+
+    #: The position of the channel in the channels list.
     position = attr(repr=False)
+
+    #: The sequence number of the current release available through
+    #: the channel.
     release_sequence = attr(repr=False)
+
+    #: The version number of the current release available through
+    #: the channel.
     release_label = attr(repr=False)
+
+    #: The release notes of the current release available through
+    #: the channel.
     release_notes = attr(repr=False)
+
+    #: The app that owns this channel.
     app = attr(repr=False)
+
+    #: INTERNAL: The requests Session used when making requests on the
+    #: channel.
     _session = attr(cmp=False, repr=False, hash=False, init=False)
 
     @classmethod
-    def from_json(cls, channel, app, session=None):
-        id = channel['Id']
-        name = channel['Name']
-        position = channel['Position']
-        release_sequence = channel['ReleaseSequence']
-        release_label = channel['ReleaseLabel']
-        release_notes = channel['ReleaseNotes']
+    def from_json(cls, channel_json, app, session=None):
+        """Create a new :class:`~Channel` instance from JSON returned by the
+        Replicated API.
+
+        Parameters
+        ----------
+        channel_json : dict
+            The parsed JSON reponse from the Replicated API.
+        app : App
+            The app that owns this :class:`~Channel`.
+        session : requests.Session
+            The requests Session this :class:`~Channel` will use when
+            making requests.
+
+        """
         instance = cls(
-            id=id,
-            name=name,
-            position=position,
-            release_sequence=release_sequence,
-            release_label=release_label,
-            release_notes=release_notes,
+            id=channel_json['Id'],
+            name=channel_json['Name'],
+            position=channel_json['Position'],
+            release_sequence=channel_json['ReleaseSequence'],
+            release_label=channel_json['ReleaseLabel'],
+            release_notes=channel_json['ReleaseNotes'],
             app=app,
         )
         instance._session = session
@@ -185,6 +216,9 @@ class Channel(object):
 
     @property
     def url(self):
+        """The URL for the channel.
+
+        """
         return self.app.url + '/channel/{0}'.format(id)
 
 
