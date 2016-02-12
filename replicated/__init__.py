@@ -1,8 +1,11 @@
 import enum
 import json
+import yaml
+
 from attr import attributes, attr
 from requests.utils import default_user_agent as requests_user_agent
 import requests
+import six
 
 
 __version__ = '0.0.1'
@@ -148,13 +151,34 @@ class Release(object):
     @property
     def config(self):
         if self._config is None:
-            url = self.url + '/properties'
-            response = self._session.get(url)
-            response.raise_for_status()
-            response_json = response.json()
-            self._config = response_json['Config']
+            self.refresh()
         return self._config
 
+    @config.setter
+    def config(self, new_yaml):
+        if not isinstance(new_yaml, six.text_type):
+            raise ValueError('Expected unicode text')
+        self._config = None
+        url = self.url + '/raw'
+        yaml_data = yaml.load(new_yaml)
+        version = yaml_data.get('version', '')
+        response = self._session.put(
+            url,
+            data=new_yaml,
+            headers={'Content-Type': 'application/yaml'},
+        )
+        response.raise_for_status()
+        self.version = version
+        self.refresh()
+
+    def refresh(self):
+        url = self.url + '/properties'
+        response = self._session.get(url)
+        response.raise_for_status()
+        response_json = response.json()
+        self._config = response_json['Config']
+        self.created_at = response_json['CreatedAt']
+        self.edited_at = response_json['EditedAt']
 
 class ReleasesSlice(object):
 
