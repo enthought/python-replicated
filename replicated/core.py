@@ -389,12 +389,37 @@ class Release(object):
 
 
 class ReleasesSlice(object):
+    """A helper object to query a sequence of releases from the Replicated
+    API.
+
+    """
 
     def __init__(self, app, session):
+        """Create a :class:`~ReleasesSlice`.
+
+        Parameters
+        ----------
+        app : App
+            The application to query for releases.
+        session : requests.Session
+            The requests Session to use for querying the Replicated API.
+
+        """
         self.app = app
         self._session = session
 
     def __getitem__(self, key):
+        """Fetch a sequence of releases.
+
+        Parameters
+        ----------
+        key : slice
+            The sequence of releases to fetch.  This must be a
+            :class:`~slice` with ``step`` unset or ``1``.  If ``stop``
+            is ``None``, then whole set of :class:`~Release` is
+            fetched.
+
+        """
         if not isinstance(key, slice):
             raise TypeError('Expected a slice')
 
@@ -420,6 +445,9 @@ class ReleasesSlice(object):
         ]
 
     def __iter__(self):
+        """Fetch all releases and iterate over them.
+
+        """
         return iter(self[:])
 
 
