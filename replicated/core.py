@@ -1,4 +1,4 @@
-#  Copyright (c) 2015 by Enthought, Inc.
+#  Copyright (c) 2016 by Enthought, Inc.
 #  All rights reserved.
 import enum
 import json

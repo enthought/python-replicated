@@ -1,5 +1,6 @@
-#  Copyright (c) 2015 by Enthought, Inc.
+#  Copyright (c) 2016 by Enthought, Inc.
 #  All rights reserved.
+
 try:  # pragma: no cover
     from ._version import (
         version as __version__,
