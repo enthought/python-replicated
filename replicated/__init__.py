@@ -88,6 +88,7 @@ class Release(object):
     edited_at = attr(repr=False)
     active_channels = attr(repr=False)
     _session = attr(cmp=False, repr=False, hash=False, init=False)
+    _config = attr(default=None, cmp=False, repr=False, hash=False)
 
     @classmethod
     def from_json(cls, release_json, app, session=None):
@@ -109,6 +110,20 @@ class Release(object):
         )
         instance._session = session
         return instance
+
+    @property
+    def url(self):
+        return self.app.url + '/{0}'.format(self.sequence)
+
+    @property
+    def config(self):
+        if self._config is None:
+            url = self.url + '/properties'
+            response = self._session.get(url)
+            response.raise_for_status()
+            response_json = response.json()
+            self._config = response_json['Config']
+        return self._config
 
 
 class ReleasesSlice(object):
