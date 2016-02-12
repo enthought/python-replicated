@@ -1,3 +1,5 @@
+import enum
+import json
 from attr import attributes, attr
 from requests.utils import default_user_agent as requests_user_agent
 import requests
@@ -10,6 +12,12 @@ def default_user_agent(base=None):
     if base is None:
         base = requests_user_agent()
     return 'python-replicated/{0} {1}'.format(__version__, base)
+
+
+class CreateReleaseSource(enum.Enum):
+    none = None
+    latest = 'latest'
+    copy = 'copy'
 
 
 @attributes
@@ -40,6 +48,28 @@ class App(object):
     @property
     def releases(self):
         return ReleasesSlice(self, self._session)
+
+    def create_release(self, source=CreateReleaseSource.none, copy=None):
+        url = self.url + '/release'
+        data = {}
+        if source != CreateReleaseSource.none:
+            data['source'] = source.value
+        if source == CreateReleaseSource.copy:
+            if copy is None:
+                raise ValueError(
+                    'Copy specified but no source release provided')
+            data['sourcedata'] = copy.sequence
+        response = self._session.post(
+            url,
+            data=json.dumps(data),
+            headers={'Content-Type': 'application/json'},
+        )
+        response.raise_for_status()
+        response_json = response.json()
+
+        new_release, = self.releases[:1]
+        assert new_release.sequence == response_json['Sequence']
+        return new_release
 
 
 @attributes
