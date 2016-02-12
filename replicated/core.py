@@ -69,20 +69,19 @@ class App(object):
     _session = attr(cmp=False, repr=False, hash=False, init=False)
 
     @classmethod
-    def from_json(cls, app_json, channels=(), session=None):
+    def from_json(cls, app_channels_json, session=None):
         """Create a new App instance from JSON returned by the Replicated API.
 
         Parameters
         ----------
-        app_json : dict
-            The parsed JSON response (App attribute only) of the
-            Replicated API.
-        channels : list or Channel
-            The channels associated with this App.
+        app_channels_json : dict
+            The parsed JSON response of the Replicated API.  This mus
+            contain an ``App`` element and a ``Channels`` element.
         session : requests.Session
             The requests Session this App will use when making requests.
 
         """
+        app_json = app_channels_json['App']
         id = app_json['Id']
         name = app_json['Name']
         slug = app_json['Slug']
@@ -92,9 +91,15 @@ class App(object):
             name=name,
             slug=slug,
             url=url,
-            channels=channels,
+            channels=(),
         )
+
+        channels = tuple(
+            Channel.from_json(ch, app=instance, session=session)
+            for ch in app_channels_json['Channels'])
+        instance.channels = channels
         instance._session = session
+
         return instance
 
     @property
@@ -319,12 +324,5 @@ class ReplicatedAPI(object):
         response.raise_for_status()
         apps_json = response.json()
 
-        apps = []
-        for item in apps_json:
-            app = App.from_json(item['App'], session=self.session)
-            channels = tuple(
-                Channel.from_json(ch, app=app, session=self.session)
-                for ch in item['Channels'])
-            app.channels = channels
-            apps.append(app)
-        return apps
+        return [App.from_json(item, session=self.session)
+                for item in apps_json]
