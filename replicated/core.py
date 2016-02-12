@@ -13,28 +13,76 @@ from ._version import version as __version__
 
 
 def default_user_agent(base=None):
+    """Create the default User-Agent string for the python-replicated
+    client.
+
+    Parameters
+    ----------
+    base : str
+        The User-Agent string to extend.  The default is the
+        ``python-requests`` User-Agent.
+
+    """
     if base is None:
         base = requests_user_agent()
     return 'python-replicated/{0} {1}'.format(__version__, base)
 
 
 class NewReleaseSource(enum.Enum):
+    """The source of configuration for a new release.
+
+    """
+
+    #: Create a new empty release.
     none = None
+
+    #: Create a new release as a copy of the latest release.
     latest = 'latest'
+
+    #: Create a new release as a copy of the specified release.
     copy = 'copy'
 
 
 @attributes
 class App(object):
+    """A Replicated-based application.
+
+    """
+
+    #: The application ID.
     id = attr(repr=False)
+
+    #: The name of the application
     name = attr()
+
+    # The slug of the application
     slug = attr(repr=False)
+
+    # The application's channels
     channels = attr()
+
+    # The API URL of the application
     url = attr(repr=False, hash=False, cmp=False)
+
+    #: INTERNAL: The requests Session used when making requests on the
+    #: application.
     _session = attr(cmp=False, repr=False, hash=False, init=False)
 
     @classmethod
     def from_json(cls, app_json, channels=(), session=None):
+        """Create a new App instance from JSON returned by the Replicated API.
+
+        Parameters
+        ----------
+        app_json : dict
+            The parsed JSON response (App attribute only) of the
+            Replicated API.
+        channels : list or Channel
+            The channels associated with this App.
+        session : requests.Session
+            The requests Session this App will use when making requests.
+
+        """
         id = app_json['Id']
         name = app_json['Name']
         slug = app_json['Slug']
@@ -51,9 +99,23 @@ class App(object):
 
     @property
     def releases(self):
+        """Query the application releases.
+
+        """
         return ReleasesSlice(self, self._session)
 
     def create_release(self, source=NewReleaseSource.none, copy=None):
+        """Create a new release.
+
+        Parameters
+        ----------
+        source : NewReleaseSource
+            The source of configuration for the new release.
+        copy : Release
+            The release to copy configuration from when source is
+            ``NewReleaseSource.copy``.
+
+        """
         url = self.url + '/release'
         data = {}
         if source != NewReleaseSource.none:
