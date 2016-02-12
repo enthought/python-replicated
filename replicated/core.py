@@ -9,7 +9,7 @@ from requests.utils import default_user_agent as requests_user_agent
 import requests
 import six
 
-from ._version import version as __version__
+from . import __version__
 
 
 def default_user_agent(base=None):

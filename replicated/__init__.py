@@ -10,9 +10,3 @@ try:  # pragma: no cover
 except ImportError:  # pragma: no cover
     __is_released__ = False
     __version__ = __git_revision__ = "unknown"
-
-
-from .core import NewReleaseSource, ReplicatedVendorAPI
-
-
-__all__ = ['NewReleaseSource', 'ReplicatedVendorAPI']
