@@ -11,7 +11,7 @@ except ImportError:  # pragma: no cover
     __version__ = __git_revision__ = "unknown"
 
 
-from .core import ReplicatedAPI
+from .core import NewReleaseSource, ReplicatedAPI
 
 
-__all__ = ['ReplicatedAPI']
+__all__ = ['NewReleaseSource', 'ReplicatedAPI']
