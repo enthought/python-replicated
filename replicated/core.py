@@ -224,18 +224,54 @@ class Channel(object):
 
 @attributes
 class Release(object):
+    """A release of an application.
+
+    """
+
+    #: The application represented by this release.
     app = attr(repr=False)
+
+    #: The sequence number of the release.
     sequence = attr()
+
+    #: The version number of the release.
     version = attr()
+
+    #: Is the release still editable?
     editable = attr(repr=False)
+
+    #: The create time of the release.
     created_at = attr(repr=False)
+
+    #: The time at which the release was last edited.
     edited_at = attr(repr=False)
+
+    #: Which channels the release is currently available through.
     active_channels = attr(repr=False)
+
+    #: INTERNAL: The requests Session used when making requests on the
+    #: release.
     _session = attr(cmp=False, repr=False, hash=False, init=False)
+
+    #: INTERNAL: a caching optimization for the release configuration.
     _config = attr(default=None, cmp=False, repr=False, hash=False)
 
     @classmethod
     def from_json(cls, release_json, app, session=None):
+        """Create a new :class:`~Release` from JSON returned by the Replicated
+        API.
+
+        Parameters
+        ----------
+        release_json : dict
+            The parsed JSON response from the Replicated API.
+        app : App
+            The :class:`~App` that owns this :class:`~Release`.
+        session : requests.Session
+            The requests Session this :class:`~Release` will use when
+            making requests.
+
+        """
         app_id = release_json['AppId']
         assert app_id == app.id
         active_channel_ids = set(
@@ -257,16 +293,25 @@ class Release(object):
 
     @property
     def url(self):
+        """The URL for the release.
+
+        """
         return self.app.url + '/{0}'.format(self.sequence)
 
     @property
     def config(self):
+        """The release configuration YAML.
+
+        """
         if self._config is None:
             self.refresh()
         return self._config
 
     @config.setter
     def config(self, new_yaml):
+        """Update the release configuration YAML.
+
+        """
         if not isinstance(new_yaml, six.text_type):
             raise ValueError('Expected unicode text')
         self._config = None
@@ -283,6 +328,10 @@ class Release(object):
         self.refresh()
 
     def refresh(self):
+        """Refresh the mutable attributes of the release after a configuration
+        change.
+
+        """
         url = self.url + '/properties'
         response = self._session.get(url)
         response.raise_for_status()
@@ -292,11 +341,33 @@ class Release(object):
         self.edited_at = response_json['EditedAt']
 
     def archive(self):
+        """Archive the release.
+
+        """
         url = self.url + '/archive'
         response = self._session.post(url)
         response.raise_for_status()
 
     def promote(self, channels, required=True, release_notes=None, label=None):
+        """Promote the release to one or more channels.
+
+        Parameters
+        ----------
+        channels : list
+            The channels to which to promote the release.
+        required : bool
+            ``True`` (default) if the release will be a required
+            upgrade for customers.
+        release_notes : str
+            The release notes for the release. If this is omitted,
+            then the release notes specified in the release
+            configuration will be used.
+        label : str
+            The release label (version) for the release. If this is
+            omitted, then the version specified in the release
+            configuration will be used.
+
+        """
         url = self.url + '/promote'
         if len(channels) == 0:
             raise ValueError('Expected at least one channel')
