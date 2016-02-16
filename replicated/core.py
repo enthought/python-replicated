@@ -177,6 +177,13 @@ class App(object):
             The name of the channel to create.
 
         """
+        try:
+            next(ch for ch in self.channels if ch.name == name)
+        except StopIteration:
+            pass
+        else:
+            raise RuntimeError('Channel {} already exists'.format(name))
+
         url = self.url + '/channel'
         data = {'name': name}
         response = self._session.post(
@@ -263,7 +270,7 @@ class Channel(object):
         """The URL for the channel.
 
         """
-        return self.app.url + '/channel/{0}'.format(id)
+        return self.app.url + '/channel/{0}'.format(self.id)
 
 
 @attributes
