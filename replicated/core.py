@@ -290,6 +290,39 @@ class Channel(object):
         """
         return self.app.url + '/channel/{0}'.format(self.id)
 
+    def create_license(self, assignee, update_policy=None):
+        """
+
+        """
+        licenses = self.app.licenses
+        try:
+            next(l for l in licenses
+                 if l.assignee == assignee and l.channel == self)
+        except StopIteration:
+            pass
+        else:
+            raise ValueError(
+                'License already exists for {} and channel {}'.format(
+                    assignee, self))
+
+        if update_policy is None:
+            update_policy = License.UpdatePolicy.manual
+        url = ReplicatedVendorAPI.base_url = '/license'
+        data = {
+            'app_id': self.app.id,
+            'channel_id': self.id,
+            'update_policy': update_policy.value,
+            'require_activation': False,
+            'assignee': assignee,
+            'expiration_policy': 'ignore',
+        }
+        response = self._session.post(
+            url, data=json.dumps(data),
+            headers={'Content-Type': 'application/json'})
+        response.raise_for_status()
+        return License.from_json(
+            response.json(), app=self.app, channel=self, session=self._session)
+
 
 @attributes
 class Release(object):
@@ -547,6 +580,10 @@ class License(object):
     is_instance_tracked = attr(repr=False)
     _session = attr(cmp=False, repr=False, hash=False, init=False)
 
+    class UpdatePolicy(enum.Enum):
+        manual = 'manual'
+        automatic = 'automatic'
+
     @classmethod
     def from_json(cls, license_json, app, channel, session):
         """
@@ -559,7 +596,7 @@ class License(object):
             app=app,
             channel=channel,
             assignee=license_json['Assignee'],
-            update_policy=license_json['UpdatePolicy'],
+            update_policy=cls.UpdatePolicy[license_json['UpdatePolicy']],
             archived=license_json['Archived'],
             grant_date=license_json['GrantDate'],
             expire_date=license_json['ExpireDate'],
