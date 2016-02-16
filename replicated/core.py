@@ -583,6 +583,7 @@ class License(object):
     class UpdatePolicy(enum.Enum):
         manual = 'manual'
         automatic = 'automatic'
+        none = "none"
 
     @classmethod
     def from_json(cls, license_json, app, channel, session):
