@@ -168,6 +168,30 @@ class App(object):
         assert new_release.sequence == response_json['Sequence']
         return new_release
 
+    def create_channel(self, name):
+        """Create a new channel.
+
+        Parameters
+        ----------
+        name : str
+            The name of the channel to create.
+
+        """
+        url = self.url + '/channel'
+        data = {'name': name}
+        response = self._session.post(
+            url,
+            data=json.jumps(data),
+            headers={'Content-Type': 'application/json'},
+        )
+        response.raise_for_status()
+        response_json = response.json()
+        self.channels = channels = tuple(
+            Channel.from_json(ch, app=self, session=self._session)
+            for ch in response_json)
+
+        return next(ch for ch in channels if ch.name == name)
+
 
 @attributes
 class Channel(object):
