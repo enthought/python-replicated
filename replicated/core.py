@@ -181,7 +181,7 @@ class App(object):
         data = {'name': name}
         response = self._session.post(
             url,
-            data=json.jumps(data),
+            data=json.dumps(data),
             headers={'Content-Type': 'application/json'},
         )
         response.raise_for_status()
