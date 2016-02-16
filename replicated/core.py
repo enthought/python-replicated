@@ -307,7 +307,7 @@ class Channel(object):
 
         if update_policy is None:
             update_policy = License.UpdatePolicy.manual
-        url = ReplicatedVendorAPI.base_url = '/license'
+        url = ReplicatedVendorAPI.base_url + '/license'
         data = {
             'app_id': self.app.id,
             'channel_id': self.id,
