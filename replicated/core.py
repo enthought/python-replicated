@@ -2,7 +2,8 @@
 #  All rights reserved.
 import enum
 import json
-import yaml
+
+import ruamel.yaml
 
 from attr import attributes, attr
 from requests.utils import default_user_agent as requests_user_agent
@@ -367,7 +368,7 @@ class Release(object):
             raise ValueError('Expected unicode text')
         self._config = None
         url = self.url + '/raw'
-        yaml_data = yaml.load(new_yaml)
+        yaml_data = ruamel.yaml.load(new_yaml)
         version = yaml_data.get('version', '')
         response = self._session.put(
             url,
