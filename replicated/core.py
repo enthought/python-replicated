@@ -125,6 +125,23 @@ class App(object):
         """
         return ReleasesSlice(self, self._session)
 
+    @property
+    def licenses(self):
+        """List the licenses associated with the application.
+
+        """
+        url = self.url + '/licenses'
+        response = self._session.get(url)
+        response.raise_for_status()
+        response_json = response.json()
+        channels = {ch.id: ch for ch in self.channels}
+        return [
+            License.from_json(
+                item, app=self, session=self._session,
+                channel=channels[item['ChannelId']])
+            for item in response_json
+        ]
+
     def create_release(self, source=NewReleaseSource.latest):
         """Create a new :class:`~Release`.
 
@@ -503,6 +520,75 @@ class ReleasesSlice(object):
 
         """
         return iter(self[:])
+
+
+@attributes
+class License(object):
+    id = attr(repr=False)
+    app = attr(repr=False)
+    channel = attr(repr=False)
+    assignee = attr()
+    update_policy = attr(repr=False)
+    archived = attr(repr=False)
+    grant_date = attr(repr=False)
+    expire_date = attr(repr=False)
+    expiration_policy = attr(repr=False)
+    revokation_date = attr(repr=False)
+    anonymous = attr(repr=False)
+    field_values = attr(repr=False)
+    billing = attr(repr=False)
+    require_activation = attr(repr=False)
+    activation_email = attr(repr=False)
+    license_versions = attr(repr=False)
+    last_sync = attr(repr=False)
+    inactive_instance_count = attr(repr=False)
+    active_instance_count = attr(repr=False)
+    untracked_instance_count = attr(repr=False)
+    is_instance_tracked = attr(repr=False)
+    _session = attr(cmp=False, repr=False, hash=False, init=False)
+
+    @classmethod
+    def from_json(cls, license_json, app, channel, session):
+        """
+
+        """
+        assert license_json['AppId'] == app.id
+        assert license_json['ChannelId'] == channel.id
+        instance = cls(
+            id=license_json['Id'],
+            app=app,
+            channel=channel,
+            assignee=license_json['Assignee'],
+            update_policy=license_json['UpdatePolicy'],
+            archived=license_json['Archived'],
+            grant_date=license_json['GrantDate'],
+            expire_date=license_json['ExpireDate'],
+            expiration_policy=license_json['ExpirationPolicy'],
+            revokation_date=license_json['RevokationDate'],
+            anonymous=license_json['Anonymous'],
+            field_values=license_json['FieldValues'],
+            billing=license_json['Billing'],
+            require_activation=license_json['RequireActivation'],
+            activation_email=license_json['ActivationEmail'],
+            license_versions=license_json['LicenseVersions'],
+            last_sync=license_json['LastSync'],
+            inactive_instance_count=license_json['InactiveInstanceCount'],
+            active_instance_count=license_json['ActiveInstanceCount'],
+            untracked_instance_count=license_json['UntrackedInstanceCount'],
+            is_instance_tracked=license_json['IsInstanceTracked'],
+        )
+        instance._session = session
+        return instance
+
+    @property
+    def value(self):
+        """The license key value.
+
+        """
+        url = ReplicatedVendorAPI.base_url + '/licensekey/{}'.format(self.id)
+        response = self._session.get(url)
+        response.raise_for_status()
+        return response.content.decode()
 
 
 class ReplicatedVendorAPI(object):
