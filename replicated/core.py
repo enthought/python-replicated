@@ -190,7 +190,10 @@ class App(object):
             Channel.from_json(ch, app=self, session=self._session)
             for ch in response_json)
 
-        return next(ch for ch in channels if ch.name == name)
+        try:
+            return next(ch for ch in channels if ch.name == name)
+        except StopIteration:
+            raise ValueError('Channel {} not created'.format(name))
 
 
 @attributes
