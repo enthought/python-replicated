@@ -84,20 +84,6 @@ def main(token, app_name, channel_name, release_file, license_file, image_tag,
     except StopIteration:
         channel = app.create_channel(channel_name)
 
-    licenses = app.licenses
-    try:
-        license = next(license for license in licenses
-                       if license.assignee == channel_name
-                       and license.channel == channel)
-    except StopIteration:
-        print('License not found ... generating')
-        license = channel.create_license(channel_name)
-
-    license_key = license.value
-    with open(license_file, 'w') as fh:
-        print('Writing license key to {}'.format(license_file))
-        fh.write(license_key)
-
     try:
         existing_release = next(
             rel for rel in app.releases
@@ -121,6 +107,20 @@ def main(token, app_name, channel_name, release_file, license_file, image_tag,
         else:
             print('Existing release matches expected config; not making '
                   'changes')
+
+    licenses = app.licenses
+    try:
+        license = next(license for license in licenses
+                       if license.assignee == channel_name
+                       and license.channel == channel)
+    except StopIteration:
+        print('License not found ... generating')
+        license = channel.create_license(channel_name)
+
+    license_key = license.value
+    with open(license_file, 'w') as fh:
+        print('Writing license key to {}'.format(license_file))
+        fh.write(license_key)
 
 
 if __name__ == '__main__':
