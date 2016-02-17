@@ -11,6 +11,7 @@ import requests
 import six
 
 from . import __version__
+from .exceptions import ReplicatedError
 
 
 def default_user_agent(base=None):
@@ -132,7 +133,8 @@ class App(object):
         """
         url = self.url + '/licenses'
         response = self._session.get(url)
-        response.raise_for_status()
+        if response.status_code != 200:
+            raise ReplicatedError(response.text)
         response_json = response.json()
         channels = {ch.id: ch for ch in self.channels}
         return [
@@ -179,7 +181,8 @@ class App(object):
             data=json.dumps(data),
             headers={'Content-Type': 'application/json'},
         )
-        response.raise_for_status()
+        if response.status_code != 201:
+            raise ReplicatedError(response.text)
         response_json = response.json()
 
         new_release, = self.releases[:1]
@@ -209,7 +212,8 @@ class App(object):
             data=json.dumps(data),
             headers={'Content-Type': 'application/json'},
         )
-        response.raise_for_status()
+        if response.status_code != 200:
+            raise ReplicatedError(response.text)
         response_json = response.json()
         self.channels = channels = tuple(
             Channel.from_json(ch, app=self, session=self._session)
@@ -319,7 +323,8 @@ class Channel(object):
         response = self._session.post(
             url, data=json.dumps(data),
             headers={'Content-Type': 'application/json'})
-        response.raise_for_status()
+        if response.status_code != 201:
+            raise ReplicatedError(response.text)
         return License.from_json(
             response.json(), app=self.app, channel=self, session=self._session)
 
@@ -425,7 +430,8 @@ class Release(object):
             data=new_yaml,
             headers={'Content-Type': 'application/yaml'},
         )
-        response.raise_for_status()
+        if response.status_code != 200:
+            raise ReplicatedError(response.text)
         self.version = version
         self.refresh()
 
@@ -436,7 +442,8 @@ class Release(object):
         """
         url = self.url + '/properties'
         response = self._session.get(url)
-        response.raise_for_status()
+        if response.status_code != 200:
+            raise ReplicatedError(response.text)
         response_json = response.json()
         self._config = response_json['Config']
         self.created_at = response_json['CreatedAt']
@@ -448,7 +455,8 @@ class Release(object):
         """
         url = self.url + '/archive'
         response = self._session.post(url)
-        response.raise_for_status()
+        if response.status_code != 204:
+            raise ReplicatedError(response.text)
 
     def promote(self, channels, required=True, release_notes=None, label=None):
         """Promote the release to one or more channels.
@@ -487,7 +495,8 @@ class Release(object):
             data=json.dumps(data),
             headers={'Content-Type': 'application/json'},
         )
-        response.raise_for_status()
+        if response.status_code != 204:
+            raise ReplicatedError(response.text)
 
 
 class ReleasesSlice(object):
@@ -537,7 +546,8 @@ class ReleasesSlice(object):
 
         url = self.app.url + suffix
         response = self._session.get(url)
-        response.raise_for_status()
+        if response.status_code != 200:
+            raise ReplicatedError(response.text)
         releases_json = response.json()
 
         if key.stop is not None:
@@ -625,7 +635,8 @@ class License(object):
         """
         url = ReplicatedVendorAPI.base_url + '/licensekey/{}'.format(self.id)
         response = self._session.get(url)
-        response.raise_for_status()
+        if response.status_code != 200:
+            raise ReplicatedError(response.text)
         return response.content.decode()
 
 
@@ -656,7 +667,8 @@ class ReplicatedVendorAPI(object):
         """
         url = self.base_url + '/apps'
         response = self.session.get(url)
-        response.raise_for_status()
+        if response.status_code != 200:
+            raise ReplicatedError(response.text)
         apps_json = response.json()
 
         return [App.from_json(item, session=self.session)

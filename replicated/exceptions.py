@@ -1,0 +1,2 @@
+class ReplicatedError(Exception):
+    pass
