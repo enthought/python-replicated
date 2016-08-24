@@ -582,7 +582,6 @@ class License(object):
     billing = attr(repr=False)
     require_activation = attr(repr=False)
     activation_email = attr(repr=False)
-    license_versions = attr(repr=False)
     last_sync = attr(repr=False)
     inactive_instance_count = attr(repr=False)
     active_instance_count = attr(repr=False)
@@ -618,7 +617,6 @@ class License(object):
             billing=license_json['Billing'],
             require_activation=license_json['RequireActivation'],
             activation_email=license_json['ActivationEmail'],
-            license_versions=license_json['LicenseVersions'],
             last_sync=license_json['LastSync'],
             inactive_instance_count=license_json['InactiveInstanceCount'],
             active_instance_count=license_json['ActiveInstanceCount'],
