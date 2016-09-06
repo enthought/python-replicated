@@ -99,7 +99,7 @@ if __name__ == "__main__":
         'six',
         'attrs >= 15.0.0',
         'requests >= 2.3.0',
-        'ruamel.yaml',
+        'ruamel.yaml == 0.12.6',
     ]
     py2_requires = install_requires + [
         'enum34 >= 1.1.0',
